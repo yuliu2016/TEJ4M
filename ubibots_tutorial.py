@@ -9,7 +9,7 @@ HOGCV = cv2.HOGDescriptor()
 HOGCV.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 
-# Alternative detector
+# Alternative detector fixme doesn't work: assertion error
 # HOGCV.setSVMDetector(cv2.HOGDescriptor_getDaimlerPeopleDetector())
 
 def detector(image):
@@ -26,29 +26,9 @@ def detector(image):
     # Applies non-max supression from imutils package to kick-off overlapped
     # boxes
     rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
-    result = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+    # rects = non_max_suppression(rects, probs=None, overlapThresh=0.65)
 
-    return result
-
-
-def localDetect(image_path):
-    result = []
-    image = cv2.imread(image_path)
-    if len(image) <= 0:
-        print("[ERROR] could not read your local image")
-        return result
-    print("[INFO] Detecting people")
-    result = detector(image)
-
-    # shows the result
-    for (xA, yA, xB, yB) in result:
-        cv2.rectangle(image, (xA, yA), (xB, yB), (0, 255, 0), 2)
-
-    cv2.imshow("result", image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    return result, image
+    return rects
 
 
 def cameraDetect():
@@ -58,23 +38,14 @@ def cameraDetect():
         ret, frame = cap.read()
         if not ret:
             break
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         frame = imutils.resize(frame, width=min(400, frame.shape[1]))
         result = detector(frame.copy())
 
         # shows the result
         for (xA, yA, xB, yB) in result:
-            cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
+            cv2.rectangle(frame, (xA, yA), (xB, yB), (255, 255, 255), 2)
         cv2.imshow('frame', frame)
-
-        # Sends results
-        # if time.time() - init >= sample_time:
-        #     print("[INFO] Sending actual frame results")
-        #     # Converts the image to base 64 and adds it to the context
-        #     b64 = convert_to_base64(frame)
-        #     context = {"image": b64}
-        #     sendToUbidots(token, device, variable,
-        #                   len(result), context=context)
-        #     init = time.time()
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -82,13 +53,6 @@ def cameraDetect():
     # When everything done, release the capture
     cap.release()
     cv2.destroyAllWindows()
-
-
-def convert_to_base64(image):
-    image = imutils.resize(image, width=400)
-    img_str = cv2.imencode('.png', image)[1].tostring()
-    b64 = base64.b64encode(img_str)
-    return b64.decode('utf-8')
 
 
 if __name__ == '__main__':
