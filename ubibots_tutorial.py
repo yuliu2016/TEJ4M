@@ -20,8 +20,8 @@ def detector(image):
     image = imutils.resize(image, width=min(400, image.shape[1]))
     # clone = image.copy()
 
-    (rects, weights) = HOGCV.detectMultiScale(image, winStride=(8, 8),
-                                              padding=(32, 32), scale=1.05)
+    (rects, weights) = HOGCV.detectMultiScale(image, winStride=(4, 4),
+                                              padding=(8, 8), scale=1.05)
 
     # Applies non-max supression from imutils package to kick-off overlapped
     # boxes
